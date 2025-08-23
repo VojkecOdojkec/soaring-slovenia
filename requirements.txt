@@ -1,0 +1,8 @@
+requests>=2.32
+pytz
+python-dateutil
+icalendar
+metpy
+numpy
+pandas
+matplotlib

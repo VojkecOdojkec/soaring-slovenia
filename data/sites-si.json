@@ -1,0 +1,178 @@
+[
+  {
+    "id": "LIJAK",
+    "name": "Lijak",
+    "region": "Primorska",
+    "lat": 45.95,
+    "lon": 13.7,
+    "elev_m": 230,
+    "orientations": [
+      "SW",
+      "S",
+      "SE"
+    ],
+    "notes": "glavni primorski"
+  },
+  {
+    "id": "KOBALA",
+    "name": "Kobala (Tolmin)",
+    "region": "Posočje",
+    "lat": 46.21,
+    "lon": 13.73,
+    "elev_m": 1070,
+    "orientations": [
+      "SW",
+      "S"
+    ],
+    "notes": "klasika XC"
+  },
+  {
+    "id": "STOL",
+    "name": "Stol (Kobarid)",
+    "region": "Posočje",
+    "lat": 46.42,
+    "lon": 14.08,
+    "elev_m": 1400,
+    "orientations": [
+      "W",
+      "SW",
+      "S"
+    ],
+    "notes": "visoko, občutljiv veter"
+  },
+  {
+    "id": "KRISKA",
+    "name": "Kriška gora",
+    "region": "Gorenjska",
+    "lat": 46.32,
+    "lon": 14.31,
+    "elev_m": 1471,
+    "orientations": [
+      "S",
+      "SE"
+    ],
+    "notes": "jutranji starti"
+  },
+  {
+    "id": "AMBROZ",
+    "name": "Ambrož pod Krvavcem",
+    "region": "Gorenjska",
+    "lat": 46.29,
+    "lon": 14.52,
+    "elev_m": 1085,
+    "orientations": [
+      "S",
+      "SE"
+    ],
+    "notes": "bližina letališča – pazljivo"
+  },
+  {
+    "id": "SLIVNICA",
+    "name": "Slivnica",
+    "region": "Notranjska",
+    "lat": 45.77,
+    "lon": 14.39,
+    "elev_m": 1114,
+    "orientations": [
+      "S",
+      "SE",
+      "E"
+    ],
+    "notes": "burja – previdno"
+  },
+  {
+    "id": "KOTECNIK",
+    "name": "Kotečnik",
+    "region": "Štajerska",
+    "lat": 46.22,
+    "lon": 15.2,
+    "elev_m": 772,
+    "orientations": [
+      "S",
+      "SE"
+    ],
+    "notes": "lep S"
+  },
+  {
+    "id": "MALIC",
+    "name": "Malič",
+    "region": "Štajerska",
+    "lat": 46.02,
+    "lon": 15.03,
+    "elev_m": 936,
+    "orientations": [
+      "S",
+      "SE",
+      "E"
+    ],
+    "notes": "dobra šola termike"
+  },
+  {
+    "id": "LISCA",
+    "name": "Lisca",
+    "region": "Posavje",
+    "lat": 46.03,
+    "lon": 15.28,
+    "elev_m": 948,
+    "orientations": [
+      "S",
+      "SE",
+      "E"
+    ],
+    "notes": "možen JZ zgoraj – preveri"
+  },
+  {
+    "id": "DONACKA",
+    "name": "Donačka gora",
+    "region": "Štajerska",
+    "lat": 46.27,
+    "lon": 15.75,
+    "elev_m": 882,
+    "orientations": [
+      "S",
+      "SE",
+      "E"
+    ],
+    "notes": "vzhodna Štajerska"
+  },
+  {
+    "id": "GABRJE",
+    "name": "Gabrje (Tolmin)",
+    "region": "Posočje",
+    "lat": 46.19,
+    "lon": 13.69,
+    "elev_m": 280,
+    "orientations": [
+      "SW",
+      "S"
+    ],
+    "notes": "nižji start/landing"
+  },
+  {
+    "id": "RAVNAGORA",
+    "name": "Ravna Gora (HR)",
+    "region": "HR",
+    "lat": 46.15,
+    "lon": 16.07,
+    "elev_m": 686,
+    "orientations": [
+      "S",
+      "SE",
+      "E"
+    ],
+    "notes": "blizu meje"
+  },
+  {
+    "id": "IVANSCICA",
+    "name": "Ivanščica (HR)",
+    "region": "HR",
+    "lat": 46.2,
+    "lon": 16.1,
+    "elev_m": 1060,
+    "orientations": [
+      "S",
+      "SE"
+    ],
+    "notes": "visoko hrvaško"
+  }
+]
