@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Soaring Slovenia//
+BEGIN:VEVENT
+SUMMARY:Soaring Slovenia – predlog vzletišč
+DTSTART;TZID=Europe/Ljubljana:20250824T070000
+DTEND;TZID=Europe/Ljubljana:20250824T071000
+UID:79fe0b9d-a1c7-46f7-a4ee-d1e40bf076de@soaring-slovenia
+DESCRIPTION:📅 24.08.2025 – Slovenija\nBaza ~1800 m | Top ~2100 m | Dv
+ igi ~2.0 m/s | Veter 207° / 0.8 m/s\n— Predlogi vzletišč —\nLijak: 
+ 72.7 – GO (XC)\nGabrje (Tolmin): 72.7 – GO (XC)\nRavna Gora (HR): 67.4
+  – GO (lokalno)\nKotečnik: 64.2 – GO (lokalno)\nDonačka gora: 60.1 
+ – GO (lokalno)\nMalič: 58.1 – GO (lokalno)\nLisca: 57.6 – GO (lokal
+ no)\nKobala (Tolmin): 55.0 – GO (lokalno)\nGraf: /Users/vojkobelsak/Down
+ loads/soaring-slovenia-v3/charts/chart-24.08.2025.png
+END:VEVENT
+END:VCALENDAR
