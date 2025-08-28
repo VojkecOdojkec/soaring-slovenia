@@ -3,15 +3,15 @@ VERSION:2.0
 PRODID:-//Soaring Slovenia//
 BEGIN:VEVENT
 SUMMARY:Soaring Slovenia – predlog vzletišč
-DTSTART;TZID=Europe/Ljubljana:20250824T070000
-DTEND;TZID=Europe/Ljubljana:20250824T071000
-UID:79fe0b9d-a1c7-46f7-a4ee-d1e40bf076de@soaring-slovenia
-DESCRIPTION:📅 24.08.2025 – Slovenija\nBaza ~1800 m | Top ~2100 m | Dv
- igi ~2.0 m/s | Veter 207° / 0.8 m/s\n— Predlogi vzletišč —\nLijak: 
- 72.7 – GO (XC)\nGabrje (Tolmin): 72.7 – GO (XC)\nRavna Gora (HR): 67.4
-  – GO (lokalno)\nKotečnik: 64.2 – GO (lokalno)\nDonačka gora: 60.1 
- – GO (lokalno)\nMalič: 58.1 – GO (lokalno)\nLisca: 57.6 – GO (lokal
- no)\nKobala (Tolmin): 55.0 – GO (lokalno)\nGraf: /Users/vojkobelsak/Down
- loads/soaring-slovenia-v3/charts/chart-24.08.2025.png
+DTSTART;TZID=Europe/Ljubljana:20250828T070000
+DTEND;TZID=Europe/Ljubljana:20250828T071000
+UID:2eebc0e2-ea00-4337-8a59-e4cb26d7a978@soaring-slovenia
+DESCRIPTION:📅 28.08.2025 – Slovenija\nBaza ~1800 m | Top ~2100 m | Dv
+ igi ~2.0 m/s | Veter 180° / 2.5 m/s\n— Predlogi vzletišč —\nLijak: 
+ 76.7 – GO (XC)\nGabrje (Tolmin): 76.7 – GO (XC)\nRavna Gora (HR): 73.4
+  – GO (XC)\nKotečnik: 70.2 – GO (XC)\nDonačka gora: 66.1 – GO (lok
+ alno)\nMalič: 64.1 – GO (lokalno)\nLisca: 63.6 – GO (lokalno)\nIvanš
+ čica (HR): 59.4 – GO (lokalno)\nGraf: /home/runner/work/soaring-sloveni
+ a/soaring-slovenia/charts/chart-28.08.2025.png
 END:VEVENT
 END:VCALENDAR
