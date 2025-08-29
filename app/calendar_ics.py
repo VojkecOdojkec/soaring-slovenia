@@ -4,7 +4,7 @@ import pytz, uuid
 
 TZ = pytz.timezone("Europe/Ljubljana")
 
-def upsert_daily_event(ics_path, local_dt, title, description, chart_url=None):
+def upsert_daily_event(ics_path, local_dt, title, description, page_url, chart_url):
     cal = Calendar()
     cal.add("prodid", "-//Soaring Slovenia//")
     cal.add("version", "2.0")
@@ -15,18 +15,12 @@ def upsert_daily_event(ics_path, local_dt, title, description, chart_url=None):
     ev.add("dtstart", TZ.localize(local_dt))
     ev.add("dtend", TZ.localize(local_dt + timedelta(minutes=10)))
 
-    body = description
-    if chart_url:
-        # v opis dodamo klikljiv URL
-        body += f"\nGraf: {chart_url}"
-        # polje URL
-        ev.add("url", chart_url)
-        # polje ATTACH kot PNG
-        ev.add("attach", chart_url, parameters={"FMTTYPE": "image/png"})
-
+    body = description + f"\nPoročilo: {page_url}\nGraf: {chart_url}"
     ev.add("description", vText(body))
-    cal.add_component(ev)
+    ev.add("url", page_url)  # klik v koledarju
+    ev.add("attach", chart_url, parameters={"FMTTYPE": "image/png"})  # priponka
 
+    cal.add_component(ev)
     with open(ics_path, "wb") as f:
         f.write(cal.to_ical())
     return ics_path
