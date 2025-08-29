@@ -52,7 +52,6 @@ jobs:
             exit 1
           fi
 
-          # Najdi graf (če obstaja). Ne ustavi joba, če ga ni.
           CHART=$(ls -t charts/chart-*.png 2>/dev/null | head -n 1 || true)
           if [ -z "${CHART:-}" ]; then
             CAND=$(grep -aoE 'chart-[0-9\.\-]+\.png' SoaringSlovenia.ics | head -n 1 || true)
@@ -67,11 +66,9 @@ jobs:
             echo "✅ Našel graf: $CHART"
             echo "🔗 RAW URL:   $RAW"
 
-            # 1) 'Graf: ...' v opisu zamenjaj z javnim URL
             perl -0777 -pe 's#Graf:\s*.*charts/[^\s\n]+#Graf: '"$RAW"'#g' SoaringSlovenia.ics > SoaringSlovenia.tmp.ics
             mv SoaringSlovenia.tmp.ics SoaringSlovenia.ics
 
-            # 2) Dodaj URL in ATTACH (če manjkata)
             awk -v raw="$RAW" '
               BEGIN{inblk=0; u=0; a=0}
               /^BEGIN:VEVENT$/ {inblk=1; u=0; a=0}
