@@ -84,7 +84,6 @@ def render_html(date_iso, region, base, top, climb, wdir, wspd, ranked, chart_re
 
 def write_report(docs_dir, date_iso, region, base, top, climb, wdir, wspd, ranked, chart_src_path, repo_slug, branch):
     os.makedirs(docs_dir, exist_ok=True)
-    # kopiraj graf v docs/assets/charts
     assets = os.path.join(docs_dir, "assets", "charts")
     os.makedirs(assets, exist_ok=True)
     fname = os.path.basename(chart_src_path)
@@ -92,7 +91,6 @@ def write_report(docs_dir, date_iso, region, base, top, climb, wdir, wspd, ranke
     if os.path.abspath(chart_src_path) != os.path.abspath(dst):
         shutil.copyfile(chart_src_path, dst)
 
-    # URL-ji (GitHub Pages in RAW)
     owner, repo = repo_slug.split("/")
     site_base = f"https://{owner}.github.io/{repo}"
     chart_rel = f"assets/charts/{fname}"
@@ -101,12 +99,10 @@ def write_report(docs_dir, date_iso, region, base, top, climb, wdir, wspd, ranke
 
     html = render_html(date_iso, region, base, top, climb, wdir, wspd, ranked, chart_rel, raw_png_url, ics_raw_url)
 
-    # dnevna stran + index
     day_file = os.path.join(docs_dir, f"{date_iso}.html")
     with open(day_file, "w", encoding="utf-8") as f:
         f.write(html)
 
-    # index kaže vedno na zadnji dan (redirect)
     index_html = f'<!doctype html><meta http-equiv="refresh" content="0; url={date_iso}.html">'
     with open(os.path.join(docs_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(index_html)
