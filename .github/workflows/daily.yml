@@ -18,13 +18,71 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
       - name: Namesti odvisnosti
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Poženi skript
+      - name: Poženi skript (ustvari .ics + graf)
         run: python -m app.main
+
+      - name: Post-process ICS (klikljiv graf + priponka, robustno)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "📄 Preverjam izhodne datoteke…"
+          ls -l || true
+          ls -l charts || true
+
+          if [ ! -f SoaringSlovenia.ics ]; then
+            echo "❌ Manjka SoaringSlovenia.ics – verjetno je prej padlo. Prekinjam z jasnim sporočilom."
+            exit 1
+          fi
+
+          # Najdi graf (če obstaja). Ne ustavi joba, če grafa ni (samo preskoči dodajanje URL/ATTACH).
+          CHART=$(ls -t charts/chart-*.png 2>/dev/null | head -n 1 || true)
+          if [ -z "${CHART:-}" ]; then
+            # poskusi iz .ics ujeti ime grafike "chart-....png"
+            CAND=$(grep -aoE 'chart-[0-9\.\-]+\.png' SoaringSlovenia.ics | head -n 1 || true)
+            if [ -n "${CAND:-}" ] && [ -f "charts/$CAND" ]; then
+              CHART="charts/$CAND"
+            fi
+          fi
+
+          if [ -z "${CHART:-}" ]; then
+            echo "⚠️ Graf ni bil ustvarjen – .ics bom pustil tak kot je (brez URL/ATTACH)."
+          else
+            FNAME=$(basename "$CHART")
+            RAW="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/charts/${FNAME}"
+            echo "✅ Našel graf: $CHART"
+            echo "🔗 RAW URL:   $RAW"
+
+            # 1) V opisu zamenjaj lokalno pot 'Graf: …charts/…png' z RAW URL-jem
+            perl -0777 -pe 's#Graf:\s*.*charts/[^\s\n]+#Graf: '"$RAW"'#g' SoaringSlovenia.ics > SoaringSlovenia.tmp.ics && mv SoaringSlovenia.tmp.ics SoaringSlovenia.ics
+
+            # 2) Dodaj URL: in ATTACH;FMTTYPE=image/png: (če še nista prisotna)
+            awk -v raw="$RAW" '
+              BEGIN{inblk=0; u=0; a=0}
+              /^BEGIN:VEVENT$/ {inblk=1; u=0; a=0}
+              {print}
+              inblk==1 && /^URL:/ {u=1}
+              inblk==1 && /^ATTACH(;FMTTYPE=image\/png)?:/ {a=1}
+              inblk==1 && /^SUMMARY:/ && u==0 {print "URL:" raw; u=1}
+              inblk==1 && /^DESCRIPTION:/ && a==0 {print "ATTACH;FMTTYPE=image/png:" raw; a=1}
+              /^END:VEVENT$/ {inblk=0}
+            ' SoaringSlovenia.ics > SoaringSlovenia.new.ics && mv SoaringSlovenia.new.ics SoaringSlovenia.ics
+          fi
+
+          echo "📄 Prvih 30 vrstic .ics po obdelavi:"
+          head -n 30 SoaringSlovenia.ics || true
 
       - name: Commit & push .ics + charts
         run: |
