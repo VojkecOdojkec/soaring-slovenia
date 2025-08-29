@@ -2,7 +2,7 @@ name: Daily Soaring Slovenia
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 05:00 UTC ≈ 07:00 CEST
+    - cron: "0 5 * * *"   # 05:00 UTC ≈ 07:00 v Sloveniji
   workflow_dispatch:
 
 permissions:
@@ -37,6 +37,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Ustvari dnevno poročilo (+ .ics, graf, HTML)
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: python -m app.main
 
       - name: Pripravi git (token + safe dir)
