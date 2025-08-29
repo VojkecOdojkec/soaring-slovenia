@@ -8,13 +8,17 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-soaring-slovenia
+  cancel-in-progress: true
+
 jobs:
   run-soaring:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+            fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -48,6 +52,7 @@ jobs:
             exit 1
           fi
 
+          # Najdi graf (če obstaja). Ne ustavi joba, če ga ni.
           CHART=$(ls -t charts/chart-*.png 2>/dev/null | head -n 1 || true)
           if [ -z "${CHART:-}" ]; then
             CAND=$(grep -aoE 'chart-[0-9\.\-]+\.png' SoaringSlovenia.ics | head -n 1 || true)
@@ -62,9 +67,11 @@ jobs:
             echo "✅ Našel graf: $CHART"
             echo "🔗 RAW URL:   $RAW"
 
+            # 1) 'Graf: ...' v opisu zamenjaj z javnim URL
             perl -0777 -pe 's#Graf:\s*.*charts/[^\s\n]+#Graf: '"$RAW"'#g' SoaringSlovenia.ics > SoaringSlovenia.tmp.ics
             mv SoaringSlovenia.tmp.ics SoaringSlovenia.ics
 
+            # 2) Dodaj URL in ATTACH (če manjkata)
             awk -v raw="$RAW" '
               BEGIN{inblk=0; u=0; a=0}
               /^BEGIN:VEVENT$/ {inblk=1; u=0; a=0}
@@ -81,14 +88,18 @@ jobs:
           echo "📄 Prvih 40 vrstic .ics po obdelavi:"
           head -n 40 SoaringSlovenia.ics || true
 
-      - name: Pripravi git (GITHUB_TOKEN + safe dir)
+      - name: Pripravi git (token + safe dir)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
 
       - name: Commit & push .ics + charts (samo če so spremembe)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git add -A
@@ -97,6 +108,5 @@ jobs:
             exit 0
           fi
           git commit -m "Daily artifacts: $(date -u +'%Y-%m-%dT%H:%MZ')"
-          # rebase pred push, da ne pade na non-fast-forward
-          git pull --rebase || true
-          git push
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
