@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -37,38 +39,32 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          echo "📄 Preverjam izhodne datoteke…"
+          echo "📄 Seznam izhodnih datotek:"
           ls -l || true
           ls -l charts || true
 
           if [ ! -f SoaringSlovenia.ics ]; then
-            echo "❌ Manjka SoaringSlovenia.ics – verjetno je prej padlo. Prekinjam z jasnim sporočilom."
+            echo "❌ Manjka SoaringSlovenia.ics – ustavi job."
             exit 1
           fi
 
-          # Najdi graf (če obstaja). Ne ustavi joba, če grafa ni (samo preskoči dodajanje URL/ATTACH).
           CHART=$(ls -t charts/chart-*.png 2>/dev/null | head -n 1 || true)
           if [ -z "${CHART:-}" ]; then
-            # poskusi iz .ics ujeti ime grafike "chart-....png"
             CAND=$(grep -aoE 'chart-[0-9\.\-]+\.png' SoaringSlovenia.ics | head -n 1 || true)
-            if [ -n "${CAND:-}" ] && [ -f "charts/$CAND" ]; then
-              CHART="charts/$CAND"
-            fi
+            if [ -n "${CAND:-}" ] && [ -f "charts/$CAND" ]; then CHART="charts/$CAND"; fi
           fi
 
           if [ -z "${CHART:-}" ]; then
-            echo "⚠️ Graf ni bil ustvarjen – .ics bom pustil tak kot je (brez URL/ATTACH)."
+            echo "⚠️ Graf ni bil ustvarjen – .ics ostane brez URL/ATTACH."
           else
             FNAME=$(basename "$CHART")
             RAW="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/charts/${FNAME}"
             echo "✅ Našel graf: $CHART"
             echo "🔗 RAW URL:   $RAW"
 
-            # 1) V opisu zamenjaj lokalno pot 'Graf: …charts/…png' z RAW URL-jem
-            perl -0777 -pe 's#Graf:\s*.*charts/[^\s\n]+#Graf: '"$RAW"'#g' SoaringSlovenia.ics > SoaringSlovenia.tmp.ics && mv SoaringSlovenia.tmp.ics SoaringSlovenia.ics
+            perl -0777 -pe 's#Graf:\s*.*charts/[^\s\n]+#Graf: '"$RAW"'#g' SoaringSlovenia.ics > SoaringSlovenia.tmp.ics
+            mv SoaringSlovenia.tmp.ics SoaringSlovenia.ics
 
-            # 2) Dodaj URL: in ATTACH;FMTTYPE=image/png: (če še nista prisotna)
             awk -v raw="$RAW" '
               BEGIN{inblk=0; u=0; a=0}
               /^BEGIN:VEVENT$/ {inblk=1; u=0; a=0}
@@ -78,16 +74,29 @@ jobs:
               inblk==1 && /^SUMMARY:/ && u==0 {print "URL:" raw; u=1}
               inblk==1 && /^DESCRIPTION:/ && a==0 {print "ATTACH;FMTTYPE=image/png:" raw; a=1}
               /^END:VEVENT$/ {inblk=0}
-            ' SoaringSlovenia.ics > SoaringSlovenia.new.ics && mv SoaringSlovenia.new.ics SoaringSlovenia.ics
+            ' SoaringSlovenia.ics > SoaringSlovenia.new.ics
+            mv SoaringSlovenia.new.ics SoaringSlovenia.ics
           fi
 
-          echo "📄 Prvih 30 vrstic .ics po obdelavi:"
-          head -n 30 SoaringSlovenia.ics || true
+          echo "📄 Prvih 40 vrstic .ics po obdelavi:"
+          head -n 40 SoaringSlovenia.ics || true
 
-      - name: Commit & push .ics + charts
+      - name: Pripravi git (GITHUB_TOKEN + safe dir)
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+
+      - name: Commit & push .ics + charts (samo če so spremembe)
+        run: |
+          set -euo pipefail
           git add -A
-          git diff --cached --quiet || git commit -m "Daily artifacts: $(date -u +'%Y-%m-%d')"
+          if git diff --cached --quiet; then
+            echo "ℹ️ Ni sprememb – nič za push."
+            exit 0
+          fi
+          git commit -m "Daily artifacts: $(date -u +'%Y-%m-%dT%H:%MZ')"
+          # rebase pred push, da ne pade na non-fast-forward
+          git pull --rebase || true
           git push
