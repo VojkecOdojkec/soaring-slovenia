@@ -10,12 +10,11 @@ from app.calendar_ics import upsert_daily_event
 from app.report import write_report
 
 def estimate_base_top_climb(openmeteo_json):
-    # groba ocena iz T na 1000/850 hPa
     h = {1000:110, 925:760, 850:1460, 700:3000}
     hourly = openmeteo_json.get("hourly", {})
     T1000 = hourly.get("temperature_1000hPa", [15])[0]
     T850  = hourly.get("temperature_850hPa",  [5])[0]
-    lapse = (T1000 - T850) / ((h[850]-h[1000]) / 1000.0)  # K/km
+    lapse = (T1000 - T850) / ((h[850]-h[1000]) / 1000.0)
     base = 2400 if lapse > 6.5 else 1800
     top  = base + (600 if lapse > 7.5 else 300)
     climb = 3.0 if lapse > 7.0 else 2.0
@@ -40,43 +39,36 @@ def pick_surface_wind(o):
     return d, s
 
 def run_for_today():
-    # 1) Viri
     sites = load_sites()
-    lat, lon = 46.10, 14.80  # center SLO
+    lat, lon = 46.10, 14.80
     o = wind_temp_profile(lat, lon)
     base, top, climb = estimate_base_top_climb(o)
     wdir, wspd = pick_surface_wind(o)
     wprof = build_wind_profile(o)
 
-    # 2) Rangiranje vzletišč
     ranked = []
     for s in sites:
         sc = score_site(s, base, top, climb, wdir, wspd)
         ranked.append({**s, "score": sc})
     ranked.sort(key=lambda x: x["score"], reverse=True)
 
-    # 3) Besedilo
     d_human = datetime.now().strftime("%d.%m.%Y")
     d_iso   = datetime.now().strftime("%Y-%m-%d")
     msg = build_message(d_human, CFG.region, ranked, base, top, climb, wdir, wspd)
 
-    # 4) Graf (s puščicami + kompasom)
     os.makedirs(CFG.chart_dir, exist_ok=True)
     chart_path = os.path.join(CFG.chart_dir, f"chart-{d_human}.png")
     save_minichart(chart_path, base, top, climb,
                    wind_text=f"Veter 10 m: {int(wdir)}° / {wspd:.1f} m/s",
                    wind_profile=wprof, surface=(wdir, wspd))
 
-    # 5) HTML (GitHub Pages)
     repo_slug = os.getenv("GITHUB_REPOSITORY", "VojkecOdojkec/soaring-slovenia")
     branch    = os.getenv("GITHUB_REF_NAME", "main")
-    page_url, site_index = write_report("docs", d_iso, CFG.region, base, top, climb, wdir, wspd, ranked, chart_path, repo_slug, branch)
+    page_url, _site_index = write_report("docs", d_iso, CFG.region, base, top, climb, wdir, wspd, ranked, chart_path, repo_slug, branch)
 
-    # 6) Chart RAW URL za ICS
     chart_fname = os.path.basename(chart_path)
     chart_url = f"https://raw.githubusercontent.com/{repo_slug}/{branch}/charts/{chart_fname}"
 
-    # 7) ICS z URL (na poročilo) + ATTACH (PNG)
     upsert_daily_event(
         CFG.ics_path,
         datetime.now().replace(hour=7, minute=0, second=0, microsecond=0),
