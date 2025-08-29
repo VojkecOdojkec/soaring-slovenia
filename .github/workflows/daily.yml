@@ -58,7 +58,7 @@ jobs:
           set -euo pipefail
           git add -A
           if git diff --cached --quiet; then
-            echo "ℹ️ Ni sprememb – nič za push."
+            echo "Ni sprememb – nič za push."
             exit 0
           fi
           git commit -m "Daily report & ICS: $(date -u +'%Y-%m-%dT%H:%MZ')"
