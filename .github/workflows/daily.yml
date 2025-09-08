@@ -2,34 +2,36 @@ name: Daily Soaring Slovenia
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 05:00 UTC ≈ 07:00 v Sloveniji
+    - cron: "0 5 * * *"           # 05:00 UTC ≈ 07:00 CEST
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: daily-soaring-slovenia
+  group: daily-soaring
   cancel-in-progress: true
 
 jobs:
   run-soaring:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
 
       - name: Namesti odvisnosti
         run: |
@@ -38,29 +40,28 @@ jobs:
 
       - name: Ustvari dnevno poročilo (+ .ics, graf, HTML)
         env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-        run: python -m app.main
+          MPLBACKEND: Agg     # varno za headless okolje
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -euxo pipefail
+          mkdir -p charts docs
+          python -X dev -m app.main
 
       - name: Pripravi git (token + safe dir)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name  "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Commit & push spremembe (samo če so)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           git add -A
           if git diff --cached --quiet; then
-            echo "Ni sprememb – nič za push."
+            echo "No changes to commit."
             exit 0
           fi
-          git commit -m "Daily report & ICS: $(date -u +'%Y-%m-%dT%H:%MZ')"
-          git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
+          git pull --rebase origin "$BRANCH" || true
+          git commit -m "Daily artifacts: $(date -u +'%Y-%m-%d')"
+          git push origin "$BRANCH"
