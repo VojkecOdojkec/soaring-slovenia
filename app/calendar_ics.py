@@ -1,3 +1,4 @@
+cat > app/calendar_ics.py <<'PY'
 from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 import pytz, uuid
@@ -25,3 +26,4 @@ def upsert_daily_event(ics_path: str, local_dt: datetime, title: str,
     with open(ics_path, "wb") as f:
         f.write(cal.to_ical())
     return ics_path
+PY
