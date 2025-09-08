@@ -8,18 +8,15 @@ from app.summary import build_message
 from app.chart import save_minichart
 from app.calendar_ics import upsert_daily_event
 
-# ——— zelo poenostavljena ocena baze/top/climb iz temperaturnega gradienta ———
 def estimate_base_top_climb(openmeteo_json):
-    h = {1000:110, 925:760, 850:1460, 700:3000}  # grobe geopt. višine (m)
+    # groba ocena iz temperaturnega gradienta med 1000 in 850 hPa
+    h = {1000:110, 850:1460}
     hourly = openmeteo_json.get("hourly", {})
     T1000 = (hourly.get("temperature_1000hPa") or [15])[0]
     T850  = (hourly.get("temperature_850hPa")  or [5])[0]
     lapse = (T1000 - T850) / ((h[850]-h[1000]) / 1000)  # K/km
-
-    # pragovna ocena; MetPy/Skew-T da natančneje (LCL/LFC/EL), a je težji za CI
     base  = 2400 if lapse > 6.5 else 1800
-    add   = 600 if lapse > 7.5 else 300
-    top   = base + add
+    top   = base + (600 if lapse > 7.5 else 300)
     climb = 3.0 if lapse > 7.0 else 2.0
     return base, top, climb
 
@@ -30,7 +27,7 @@ def pick_surface_wind(openmeteo_json):
     return float(dir10), float(spd10)
 
 def run_for_today():
-    # center Vzhodne Štajerske (Maribor) – po želji zamenjaj z vaščim točnim lat/lon
+    # Vzhodna Štajerska ~ Maribor
     lat, lon = 46.56, 15.65
     met = wind_temp_profile(lat, lon)
 
@@ -49,7 +46,7 @@ def run_for_today():
     chart_path = os.path.join(CFG.chart_dir, f"chart-{today}.png")
     save_minichart(chart_path, base, top, climb, f"Veter: {int(wdir)}° / {wspd:.1f} m/s")
 
-    # ics (07:00 lokalno)
+    # ICS ob 07:00 lokalno
     run_dt = datetime.now().replace(hour=7, minute=0, second=0, microsecond=0)
     upsert_daily_event(
         CFG.ics_path,
