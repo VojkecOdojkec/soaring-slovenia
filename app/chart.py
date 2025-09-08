@@ -1,7 +1,7 @@
 # app/chart.py
 import os
 import matplotlib
-matplotlib.use("Agg")  # deluje v GitHub Actions in brez GUI
+matplotlib.use("Agg")  # deluje brez GUI (npr. na GitHub Actions)
 import matplotlib.pyplot as plt
 
 
@@ -47,7 +47,7 @@ def save_minichart(path, base_m, top_m, climb_ms, wind_text=None,
       • črtkani liniji za bazo in top,
       • polje 'moč dviganj',
       • (opcijsko) desna os z vertikalnim profilom hitrosti vetra.
-    Argument **kwargs namenoma požremo (združljivost).
+    Argument **kwargs namenoma pogoltnemo (združljivost s starejšimi klici).
     """
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
 
